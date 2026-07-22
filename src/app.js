@@ -125,6 +125,56 @@ function applyPreset(preset) {
 }
 
 // ---------------------------------------------------------------------------
+// Config persistence (localStorage) — only the pipeline params in DEFAULTS.
+// ---------------------------------------------------------------------------
+const STORAGE_KEY = 'ugosketch:params';
+let statusTimer = 0;
+
+function flashStatus(msg) {
+  const el = $('#configStatus');
+  el.textContent = msg;
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => { el.textContent = ''; }, 2000);
+}
+
+/** Applies the whole current state to the UI and re-renders. Used after any
+ *  bulk state change (load, reset), and keeps mode tabs/sections in sync. */
+function applyStateToUI() {
+  syncControls();
+  setMode(state.mode);  // refreshes tab highlight + section visibility, schedules regen
+}
+
+function saveConfig() {
+  const params = {};
+  for (const k of Object.keys(DEFAULTS)) params[k] = state[k];
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(params));
+    flashStatus('✓ 保存しました');
+  } catch (e) {
+    flashStatus('保存できませんでした');
+  }
+}
+
+function loadConfig() {
+  let raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+  if (!raw) return;
+  let saved;
+  try { saved = JSON.parse(raw); } catch (e) { return; }
+  // Only accept keys we know, so an old/garbage payload can't inject fields.
+  for (const k of Object.keys(DEFAULTS)) {
+    if (saved[k] !== undefined) state[k] = saved[k];
+  }
+}
+
+function resetConfig() {
+  Object.assign(state, DEFAULTS);
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+  applyStateToUI();
+  flashStatus('初期値に戻しました');
+}
+
+// ---------------------------------------------------------------------------
 // Mode tabs + section visibility
 // ---------------------------------------------------------------------------
 function setMode(mode) {
@@ -454,9 +504,18 @@ function wireEvents() {
     scheduleRegen();
   });
 
-  // file input + dropzone
+  // file input + dropzone + "change image" button (all reuse the same picker,
+  // so a new pick replaces the current image in place — no reload needed).
   dropzone.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', () => loadImageFromFile(fileInput.files[0]));
+  $('#changeImage').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    loadImageFromFile(fileInput.files[0]);
+    fileInput.value = '';  // let the same file be re-picked later
+  });
+
+  // config persistence
+  $('#saveConfig').addEventListener('click', saveConfig);
+  $('#resetConfig').addEventListener('click', resetConfig);
 
   // page-wide drag & drop
   window.addEventListener('dragover', (e) => {
@@ -530,8 +589,9 @@ function init() {
   buildFieldSelect();
   bindInputs();
   wireEvents();
+  loadConfig();          // restore saved params over DEFAULTS, if any
   syncControls();
-  setMode('warp');
+  setMode(state.mode);   // honour the restored mode (defaults to 'warp')
   setExportEnabled(false);
   canvas.classList.add('empty');
   playToggle.textContent = '⏸';

@@ -32,6 +32,7 @@
         <div class="playbar">
           <button class="pb-btn" id="playToggle" title="再生 / 停止">⏸</button>
           <span class="frame-count" id="frameCount">–/–</span>
+          <button class="pb-btn" id="changeImage" title="別の画像に差し替え">画像を変更</button>
           <span class="spacer"></span>
           <div class="bg-group" id="bgGroup">
             <span class="bg-label">背景</span>
@@ -58,6 +59,11 @@
         <section class="card group">
           <h2 class="group-title">プリセット</h2>
           <div class="preset-row" id="presetRow"></div>
+          <div class="config-row">
+            <button class="pb-btn" id="saveConfig" title="現在のパラメーターをこのブラウザに保存">設定を保存</button>
+            <button class="pb-btn" id="resetConfig" title="すべてのパラメーターを初期値に戻す">初期値に戻す</button>
+            <span class="config-status" id="configStatus"></span>
+          </div>
         </section>
 
         <!-- Mode -->

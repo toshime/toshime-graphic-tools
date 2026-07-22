@@ -162,6 +162,14 @@ body {
 }
 .pb-btn:hover { border-color: var(--accent); }
 .pb-btn:active { background: var(--accent-dim); }
+
+.config-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.config-status { color: var(--accent); font-size: 11px; }
 .frame-count {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
