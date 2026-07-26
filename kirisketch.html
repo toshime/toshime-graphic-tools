@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KiriSketch</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%82%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./kiri.css">
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1 class="wordmark">Kiri<span>Sketch</span></h1>
+      <p class="tagline">スプライトシートなどをバラして個別PNGに切り出す</p>
+      <nav class="tool-nav">
+        <a class="tool-link" href="./index.html">UgoSketch</a>
+        <a class="tool-link active" href="./kirisketch.html">KiriSketch</a>
+      </nav>
+    </header>
+
+    <main class="layout">
+      <!-- ================= PREVIEW ================= -->
+      <section class="card preview">
+        <div class="stage" id="stage">
+          <canvas id="previewCanvas" width="1" height="1"></canvas>
+          <div class="dropzone" id="dropzone">
+            <div class="dz-inner">
+              <div class="dz-icon">✂</div>
+              <p class="dz-main">画像をドロップ / クリックで選択</p>
+              <p class="dz-sub">PNG / JPG / GIF / WebP</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="playbar">
+          <span class="frame-count" id="regionCount">–</span>
+          <button class="pb-btn" id="changeImage" title="別の画像に差し替え">画像を変更</button>
+          <span class="spacer"></span>
+          <div class="bg-group" id="bgGroup">
+            <span class="bg-label">背景</span>
+            <button class="pb-btn bg active" data-bg="checker">市松</button>
+            <button class="pb-btn bg" data-bg="white">白</button>
+            <button class="pb-btn bg" data-bg="black">黒</button>
+          </div>
+          <div class="zoom-group" id="zoomGroup">
+            <button class="pb-btn zoom active" data-zoom="fit">フィット</button>
+            <button class="pb-btn zoom" data-zoom="1">1x</button>
+            <button class="pb-btn zoom" data-zoom="2">2x</button>
+            <button class="pb-btn zoom" data-zoom="4">4x</button>
+          </div>
+          <button class="pb-btn" id="toggleBoxes" title="枠の表示を切り替え">枠を隠す</button>
+        </div>
+        <p class="hint">プレビューの枠をクリックすると、その1枚を除外／復帰できます</p>
+
+        <!-- ================= RESULTS ================= -->
+        <div class="results">
+          <div class="results-head">
+            <h2 class="group-title">切り出し結果 <span class="count-pill" id="selectedCount">0</span></h2>
+            <div class="results-actions">
+              <button class="pb-btn" id="selectAll">すべて選択</button>
+              <button class="pb-btn" id="selectNone">すべて解除</button>
+            </div>
+          </div>
+          <div class="thumb-grid" id="thumbGrid"></div>
+          <p class="hint" id="thumbNote" hidden></p>
+        </div>
+      </section>
+
+      <!-- ================= CONTROLS ================= -->
+      <div class="panel">
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+
+        <!-- Split mode -->
+        <section class="card group">
+          <h2 class="group-title">分割方法</h2>
+          <div class="tabs" id="modeTabs">
+            <button class="tab active" data-mode="auto">自動検出</button>
+            <button class="tab" data-mode="grid">グリッド</button>
+          </div>
+          <p class="hint" id="modeHint" style="margin-top:10px"></p>
+          <div class="config-row">
+            <button class="pb-btn" id="saveConfig" title="現在の設定をこのブラウザに保存">設定を保存</button>
+            <button class="pb-btn" id="resetConfig" title="すべての設定を初期値に戻す">初期値に戻す</button>
+            <span class="config-status" id="configStatus"></span>
+          </div>
+        </section>
+
+        <!-- Auto detect -->
+        <section class="card group" id="autoGroup">
+          <h2 class="group-title">自動検出</h2>
+          <div class="grid">
+            <label class="row col span2">
+              <span class="row-label">背景の判定</span>
+              <select data-param="bgMode" id="bgModeSelect">
+                <option value="auto">自動</option>
+                <option value="alpha">透明部分を背景にする</option>
+                <option value="color">指定した色を背景にする</option>
+              </select>
+            </label>
+            <p class="hint span2" id="bgInfo"></p>
+            <label class="row span2" id="bgColorRow">
+              <span class="row-label">背景色</span>
+              <input type="color" data-param="bgColor" id="bgColorPick" class="bg-color">
+              <button class="mini-btn" id="pickFromImage" title="画像上をクリックして色を拾う">スポイト</button>
+            </label>
+            <label class="row span2" id="toleranceRow">
+              <span class="row-label">色の許容差</span>
+              <input type="range" data-param="tolerance" min="0" max="128" step="1">
+              <span class="row-val" data-for="tolerance"></span>
+            </label>
+            <label class="row">
+              <span class="row-label">透明しきい値</span>
+              <input type="range" data-param="alphaThreshold" min="1" max="254" step="1">
+              <span class="row-val" data-for="alphaThreshold"></span>
+            </label>
+            <label class="row">
+              <span class="row-label">結合距離</span>
+              <input type="range" data-param="gap" min="0" max="64" step="1">
+              <span class="row-val" data-for="gap"></span>
+            </label>
+            <p class="hint span2">結合距離＝この px 以内に離れている部品どうしを 1 枚にまとめる（目や手足が分かれているキャラ向け）</p>
+            <label class="row">
+              <span class="row-label">最小サイズ</span>
+              <input type="range" data-param="minSize" min="1" max="64" step="1">
+              <span class="row-val" data-for="minSize"></span>
+            </label>
+            <label class="row col">
+              <span class="row-label">並び順</span>
+              <select data-param="sortOrder">
+                <option value="row">行優先（左上から）</option>
+                <option value="col">列優先（左上から）</option>
+                <option value="size">大きい順</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <!-- Grid -->
+        <section class="card group" id="gridGroup" hidden>
+          <h2 class="group-title">グリッド</h2>
+          <div class="grid">
+            <label class="row col span2">
+              <span class="row-label">指定のしかた</span>
+              <select data-param="gridMode" id="gridModeSelect">
+                <option value="count">分割数（列×行）</option>
+                <option value="size">セルサイズ（px）</option>
+              </select>
+            </label>
+            <label class="row" data-grid="count">
+              <span class="row-label">列数</span>
+              <input type="number" data-param="cols" min="1" max="256" step="1" class="num">
+            </label>
+            <label class="row" data-grid="count">
+              <span class="row-label">行数</span>
+              <input type="number" data-param="rows" min="1" max="256" step="1" class="num">
+            </label>
+            <label class="row" data-grid="size">
+              <span class="row-label">セル幅</span>
+              <input type="number" data-param="cellW" min="1" step="1" class="num">
+            </label>
+            <label class="row" data-grid="size">
+              <span class="row-label">セル高</span>
+              <input type="number" data-param="cellH" min="1" step="1" class="num">
+            </label>
+            <label class="row">
+              <span class="row-label">開始X</span>
+              <input type="number" data-param="offsetX" min="0" step="1" class="num">
+            </label>
+            <label class="row">
+              <span class="row-label">開始Y</span>
+              <input type="number" data-param="offsetY" min="0" step="1" class="num">
+            </label>
+            <label class="row">
+              <span class="row-label">間隔X</span>
+              <input type="number" data-param="spacingX" min="0" step="1" class="num">
+            </label>
+            <label class="row">
+              <span class="row-label">間隔Y</span>
+              <input type="number" data-param="spacingY" min="0" step="1" class="num">
+            </label>
+            <p class="hint span2">セルサイズ: <span id="cellInfo">–</span></p>
+            <label class="row check span2">
+              <input type="checkbox" data-param="skipEmpty">
+              <span>空っぽのセルは飛ばす</span>
+            </label>
+            <label class="row check span2">
+              <input type="checkbox" data-param="trimCells">
+              <span>各セルを中身の大きさに切り詰める</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Output -->
+        <section class="card group">
+          <h2 class="group-title">切り出し設定</h2>
+          <div class="grid">
+            <label class="row">
+              <span class="row-label">余白</span>
+              <input type="range" data-param="padding" min="0" max="64" step="1">
+              <span class="row-val" data-for="padding"></span>
+            </label>
+            <label class="row">
+              <span class="row-label">拡大</span>
+              <input type="range" data-param="scale" min="1" max="8" step="1">
+              <span class="row-val" data-for="scale"></span>
+            </label>
+            <label class="row check span2">
+              <input type="checkbox" data-param="uniform">
+              <span>すべて同じサイズに揃える（中央寄せ）</span>
+            </label>
+            <p class="hint span2">アニメのコマなど、位置関係を保ったまま書き出したいときに。</p>
+            <label class="row check span2">
+              <input type="checkbox" data-param="keepBg">
+              <span>背景色ごと切り出す（透明にしない）</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Export -->
+        <section class="card group export">
+          <h2 class="group-title">書き出し</h2>
+          <div class="grid">
+            <label class="row col span2">
+              <span class="row-label">ファイル名</span>
+              <div class="name-row">
+                <input type="text" id="baseName" class="num" placeholder="image">
+                <span class="row-unit">_01.png</span>
+              </div>
+            </label>
+            <label class="row check span2">
+              <input type="checkbox" id="metaJson">
+              <span>座標メタJSONも保存</span>
+            </label>
+          </div>
+          <button class="export-btn primary" id="exportZip">まとめてZIP保存</button>
+          <p class="hint" id="exportInfo">個別に保存したいときは、下のサムネイルの ⤓ を押してください。</p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      すべてブラウザ内で処理され、画像はアップロードされません。
+    </footer>
+  </div>
+
+  <script type="module" src="./src/kiri/app.js"></script>
+</body>
+</html>

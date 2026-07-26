@@ -57,6 +57,30 @@ body {
   font-size: 12px;
 }
 
+/* ---------- Tool switcher (shared by every tool page) ---------- */
+.tool-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  align-self: center;
+}
+.tool-link {
+  display: block;
+  padding: 6px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+.tool-link:hover { border-color: var(--accent); color: var(--accent); }
+.tool-link.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
 /* ---------- Layout ---------- */
 .layout {
   display: grid;
