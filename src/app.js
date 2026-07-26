@@ -8,6 +8,7 @@ import { exportPngSequence, exportSpriteSheet, exportGif, upscaleFrames } from '
 // ---- state ----------------------------------------------------------------
 const state = { ...DEFAULTS };
 let sourceImage = null;      // HTMLImageElement of the loaded picture
+let sourceName = 'image';    // loaded filename minus extension, for export names
 let currentFrames = [];      // ImageData[]
 let currentPalette = null;   // [[r,g,b],...] | null
 let frameCanvases = [];      // one canvas per frame for fast drawImage
@@ -383,6 +384,7 @@ function loadImageFromFile(file) {
   img.onload = () => {
     URL.revokeObjectURL(url);
     sourceImage = img;
+    sourceName = sanitizeBase(file.name);
     dropzone.classList.add('hidden');
     updateOutSize();
     if (!sheetColsTouched) sheetCols.value = state.frameCount;
@@ -390,6 +392,22 @@ function loadImageFromFile(file) {
   };
   img.onerror = () => { URL.revokeObjectURL(url); console.error('failed to load image'); };
   img.src = url;
+}
+
+/** "my pic (1).png" -> "my_pic_1" — safe to drop into a download filename. */
+function sanitizeBase(name) {
+  const stem = String(name || '').replace(/\.[^.]+$/, '');
+  const clean = stem
+    .replace(/[\\/:*?"<>|]+/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+  return clean || 'image';
+}
+
+/** Every export is named after the source image, e.g. `cat_ugosketch.gif`. */
+function outName(suffix) {
+  return `${sourceName}_ugosketch${suffix}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -449,9 +467,9 @@ async function doExportSheet() {
   const { sheetBlob, metaJson } = await exportSpriteSheet(forExport(currentFrames), {
     columns, fps: state.fps, pingPong: state.pingPong,
   });
-  download(sheetBlob, 'ugosketch_sheet.png');
+  download(sheetBlob, outName('_sheet.png'));
   if ($('#sheetMeta').checked) {
-    download(new Blob([metaJson], { type: 'application/json' }), 'ugosketch_sheet.json');
+    download(new Blob([metaJson], { type: 'application/json' }), outName('_sheet.json'));
   }
 }
 
@@ -475,7 +493,8 @@ async function doCopySheet() {
 
 async function doExportSeq() {
   if (!currentFrames.length) return;
-  download(await exportPngSequence(forExport(currentFrames)), 'ugosketch_frames.zip');
+  const zip = await exportPngSequence(forExport(currentFrames), `${sourceName}_ugosketch`);
+  download(zip, outName('_frames.zip'));
 }
 
 function doExportGif() {
@@ -485,7 +504,7 @@ function doExportGif() {
   const blob = exportGif(ordered, currentPalette, {
     fps: state.fps, alphaThreshold: state.alphaThreshold,
   });
-  download(blob, 'ugosketch.gif');
+  download(blob, outName('.gif'));
 }
 
 // ---------------------------------------------------------------------------

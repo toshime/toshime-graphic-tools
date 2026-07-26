@@ -17,8 +17,8 @@ export async function imageDataToPng(imageData) {
   return new Uint8Array(await blob.arrayBuffer());
 }
 
-function frameName(i) {
-  return `frame_${String(i).padStart(2, '0')}.png`;
+function frameName(i, prefix) {
+  return `${prefix ? `${prefix}_` : ''}frame_${String(i).padStart(2, '0')}.png`;
 }
 
 /**
@@ -45,11 +45,11 @@ export function upscaleFrames(frames, factor) {
   });
 }
 
-/** Raw frames -> ZIP of frame_00.png, frame_01.png ... (no ping-pong). */
-export async function exportPngSequence(frames) {
+/** Raw frames -> ZIP of `<prefix>_frame_00.png`, ... (no ping-pong). */
+export async function exportPngSequence(frames, prefix = '') {
   const entries = [];
   for (let i = 0; i < frames.length; i++) {
-    entries.push({ name: frameName(i), data: await imageDataToPng(frames[i]) });
+    entries.push({ name: frameName(i, prefix), data: await imageDataToPng(frames[i]) });
   }
   return createZip(entries);
 }
