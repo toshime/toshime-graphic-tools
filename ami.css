@@ -1,0 +1,113 @@
+/* けろけろ 固有のスタイル（共通の style.css の上に乗る） */
+
+/* ステージは 1 枚の静止画。はみ出した分はドラッグで動かす（src/viewer.js）。 */
+#stage { height: 380px; }
+
+.name-row { display: flex; align-items: center; gap: 8px; }
+.name-row .num { flex: 1; }
+
+/* ---------- パレット ---------- */
+.pal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+.pal-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.pal-row.off { opacity: 0.4; }
+.pal-row:hover { border-color: var(--line); }
+.pal-row input[type="checkbox"] { accent-color: var(--accent-deep); margin: 0; }
+.pal-row .bg-color { width: 22px; height: 22px; flex: none; }
+.pal-hex {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.pal-row .mini-btn { padding: 1px 7px; font-size: 11px; line-height: 1.5; box-shadow: none; }
+
+.pal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+/* ---------- ブラシ（網） ---------- */
+.brush-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+.brush {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 3px 5px;
+  background: var(--sheet);
+  border: 1.5px solid var(--line-2);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--line-2);
+  transition: transform 0.06s, box-shadow 0.06s;
+}
+.brush:hover { border-color: var(--ink); box-shadow: 0 2px 0 var(--ink); }
+.brush:active { transform: translateY(2px); box-shadow: none; }
+.brush.on {
+  border-color: var(--ink);
+  background: var(--accent-soft);
+  color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+.brush canvas {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+}
+.brush-name {
+  line-height: 1.2;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+}
+.brush-density {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+/* 右上の点 = 直前の描画で実際に使われた網。同じ濃さの網が他にオンだと
+   そちらが勝つので、オンにしても点がつかないことがある。 */
+.brush.used::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 1px solid var(--ink);
+}
+
+@media (max-width: 900px) {
+  #stage { height: 32vh; min-height: 180px; }
+}
+@media (max-width: 600px) {
+  .brush-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+}

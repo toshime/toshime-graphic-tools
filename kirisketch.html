@@ -3,24 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KiriSketch</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%82%3C/text%3E%3C/svg%3E">
+  <title>ばらばら</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='6' fill='%23ef6fa0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./kiri.css">
 </head>
-<body>
+<body data-tool="bara">
   <div class="app">
     <header class="app-header">
-      <h1 class="wordmark">Kiri<span>Sketch</span></h1>
-      <p class="tagline">スプライトシートなどをバラして個別PNGに切り出す</p>
-      <nav class="tool-nav">
-        <a class="tool-link" href="./index.html">UgoSketch</a>
-        <a class="tool-link active" href="./kirisketch.html">KiriSketch</a>
+      <div class="brand">
+        <h1 class="wordmark">ばらばら</h1>
+        <p class="tagline">スプライトシートなどをバラして個別PNGに切り出す</p>
+      </div>
+      <nav class="tool-nav" aria-label="ツール">
+        <a class="tool-link" data-tool="yura" href="./index.html">ゆらゆら</a>
+        <a class="tool-link active" data-tool="bara" href="./kirisketch.html">ばらばら</a>
+        <a class="tool-link" data-tool="kero" href="./amisketch.html">けろけろ</a>
       </nav>
     </header>
 
     <main class="layout">
-      <!-- ================= PREVIEW ================= -->
+      <!-- ================= PREVIEW + RESULTS (左列) ================= -->
+      <div class="main-col">
       <section class="card preview">
         <div class="stage" id="stage">
           <canvas id="previewCanvas" width="1" height="1"></canvas>
@@ -52,20 +57,19 @@
           <button class="pb-btn" id="toggleBoxes" title="枠の表示を切り替え">枠を隠す</button>
         </div>
         <p class="hint">プレビューの枠をクリックすると、その1枚を除外／復帰できます</p>
-
-        <!-- ================= RESULTS ================= -->
-        <div class="results">
-          <div class="results-head">
-            <h2 class="group-title">切り出し結果 <span class="count-pill" id="selectedCount">0</span></h2>
-            <div class="results-actions">
-              <button class="pb-btn" id="selectAll">すべて選択</button>
-              <button class="pb-btn" id="selectNone">すべて解除</button>
-            </div>
-          </div>
-          <div class="thumb-grid" id="thumbGrid"></div>
-          <p class="hint" id="thumbNote" hidden></p>
-        </div>
       </section>
+      <section class="card results-card">
+        <div class="results-head">
+          <h2 class="group-title">切り出し結果 <span class="count-pill" id="selectedCount">0</span></h2>
+          <div class="results-actions">
+            <button class="pb-btn" id="selectAll">すべて選択</button>
+            <button class="pb-btn" id="selectNone">すべて解除</button>
+          </div>
+        </div>
+        <div class="thumb-grid" id="thumbGrid"></div>
+        <p class="hint" id="thumbNote" hidden></p>
+      </section>
+      </div>
 
       <!-- ================= CONTROLS ================= -->
       <div class="panel">
@@ -237,6 +241,8 @@
           <p class="hint" id="exportInfo">個別に保存したいときは、下のサムネイルの ⤓ を押してください。</p>
         </section>
       </div>
+
+      <!-- ================= RESULTS ================= -->
     </main>
 
     <footer class="app-footer">

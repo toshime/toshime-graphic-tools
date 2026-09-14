@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>けろけろ</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='6' fill='%2372c04a'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./kiri.css">
+  <link rel="stylesheet" href="./ami.css">
+</head>
+<body data-tool="kero">
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <h1 class="wordmark">けろけろ</h1>
+        <p class="tagline">画像をうごメモ風の網（ディザ）にする</p>
+      </div>
+      <nav class="tool-nav" aria-label="ツール">
+        <a class="tool-link" data-tool="yura" href="./index.html">ゆらゆら</a>
+        <a class="tool-link" data-tool="bara" href="./kirisketch.html">ばらばら</a>
+        <a class="tool-link active" data-tool="kero" href="./amisketch.html">けろけろ</a>
+      </nav>
+    </header>
+
+    <main class="layout">
+      <!-- ================= PREVIEW ================= -->
+      <section class="card preview">
+        <div class="stage" id="stage">
+          <canvas id="previewCanvas" width="1" height="1"></canvas>
+          <div class="dropzone" id="dropzone">
+            <div class="dz-inner">
+              <div class="dz-icon">▩</div>
+              <p class="dz-main">画像をドロップ / クリックで選択</p>
+              <p class="dz-sub">PNG / JPG / GIF / WebP</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="playbar">
+          <span class="frame-count" id="sizeInfo">–</span>
+          <button class="pb-btn" id="changeImage" title="別の画像に差し替え">画像を変更</button>
+          <span class="spacer"></span>
+          <div class="bg-group" id="bgGroup">
+            <span class="bg-label">背景</span>
+            <button class="pb-btn bg active" data-bg="checker">市松</button>
+            <button class="pb-btn bg" data-bg="white">白</button>
+            <button class="pb-btn bg" data-bg="black">黒</button>
+          </div>
+          <div class="zoom-group" id="zoomGroup">
+            <button class="pb-btn zoom active" data-zoom="fit">フィット</button>
+            <button class="pb-btn zoom" data-zoom="1">1x</button>
+            <button class="pb-btn zoom" data-zoom="2">2x</button>
+            <button class="pb-btn zoom" data-zoom="4">4x</button>
+            <button class="pb-btn zoom" data-zoom="8">8x</button>
+          </div>
+          <button class="pb-btn" id="compareBtn" title="押している間だけ元画像を表示">元画像と比較</button>
+        </div>
+        <p class="hint" id="usageInfo">使われた網がここに出ます。</p>
+      </section>
+
+      <!-- ================= CONTROLS ================= -->
+      <div class="panel">
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+
+        <!-- Resolution -->
+        <section class="card group">
+          <h2 class="group-title">解像度</h2>
+          <div class="grid">
+            <label class="row">
+              <span class="row-label">幅</span>
+              <input type="number" data-param="outW" min="1" max="4096" step="1" class="num">
+              <span class="row-unit">px</span>
+            </label>
+            <label class="row">
+              <span class="row-label">高さ</span>
+              <input type="number" data-param="outH" min="1" max="4096" step="1" class="num">
+              <span class="row-unit">px</span>
+            </label>
+            <label class="row check span2">
+              <input type="checkbox" data-param="lockAspect">
+              <span>縦横比を保つ</span>
+            </label>
+            <div class="preset-row span2" id="sizePresets">
+              <button class="preset-btn" data-size="orig">元のまま</button>
+              <button class="preset-btn" data-size="0.5">1/2</button>
+              <button class="preset-btn" data-size="0.25">1/4</button>
+              <button class="preset-btn" data-size="dsi">DSi画面 256×192</button>
+              <button class="preset-btn" data-size="w512">幅512</button>
+              <button class="preset-btn" data-size="w256">幅256</button>
+              <button class="preset-btn" data-size="w128">幅128</button>
+              <button class="preset-btn" data-size="w64">幅64</button>
+            </div>
+            <label class="row col span2">
+              <span class="row-label">縮小のしかた</span>
+              <select data-param="resize">
+                <option value="line">ライン重視</option>
+                <option value="smooth">なめらか（バイキュービック）</option>
+                <option value="nearest">ニアレストネイバー</option>
+              </select>
+            </label>
+            <p class="hint span2">ライン重視＝細い主線が消えないように、範囲内でいちばん目立つ色に寄せて縮小します。ドット絵はニアレストで。</p>
+          </div>
+          <div class="config-row">
+            <button class="pb-btn" id="saveConfig" title="現在の設定をこのブラウザに保存">設定を保存</button>
+            <button class="pb-btn" id="resetConfig" title="すべての設定を初期値に戻す">初期値に戻す</button>
+            <span class="config-status" id="configStatus"></span>
+          </div>
+        </section>
+
+        <!-- Colours -->
+        <section class="card group">
+          <h2 class="group-title">使う色</h2>
+          <div class="preset-row" id="palettePresets"></div>
+          <div class="pal-list" id="palList"></div>
+          <div class="pal-actions">
+            <button class="mini-btn" id="addColor">＋ 色を追加</button>
+            <button class="mini-btn" id="palAll">すべて使う</button>
+          </div>
+          <div class="grid" style="margin-top:12px">
+            <label class="row span2">
+              <span class="row-label">画像から取る</span>
+              <input type="number" data-param="extractCount" min="2" max="12" step="1" class="num">
+              <button class="mini-btn" id="extractPalette">抽出</button>
+            </label>
+            <p class="hint span2">読み込んだ画像からよく使われている色を拾ってパレットにします。</p>
+            <label class="row col span2">
+              <span class="row-label">透明部分</span>
+              <select data-param="alphaMode">
+                <option value="keep">透明のまま残す</option>
+                <option value="paper">紙の色でうめる</option>
+              </select>
+            </label>
+            <label class="row span2">
+              <span class="row-label">紙の色</span>
+              <input type="color" data-param="paper" class="bg-color">
+              <span class="hint">網の下地になる色。透明部分の扱いにも使います。</span>
+            </label>
+            <label class="row span2">
+              <span class="row-label">透明しきい値</span>
+              <input type="range" data-param="alphaThreshold" min="1" max="254" step="1">
+              <span class="row-val" data-for="alphaThreshold"></span>
+            </label>
+            <label class="row check span2">
+              <input type="checkbox" data-param="edgeDither">
+              <span>ふちの半透明も網にする</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Brushes -->
+        <section class="card group">
+          <h2 class="group-title">使うブラシ（網）</h2>
+          <p class="hint">うごメモの網 8 種。オンにした網だけで中間の濃さを作ります。横・縦・4 は同じ濃さ（1/2）なので、複数オンだと並び順で先のものが使われます。</p>
+          <div class="brush-grid" id="brushGrid"></div>
+          <div class="pal-actions">
+            <button class="mini-btn" id="brushAll">すべてオン</button>
+            <button class="mini-btn" id="brushNone">すべてオフ</button>
+            <button class="mini-btn" id="brushDots">1〜6 だけ（線なし）</button>
+          </div>
+          <div class="grid" style="margin-top:12px">
+            <label class="row span2">
+              <span class="row-label">網の大きさ</span>
+              <input type="range" data-param="tileScale" min="1" max="6" step="1">
+              <span class="row-val" data-for="tileScale"></span>
+            </label>
+            <p class="hint span2">1 = 1ドットきざみの細かい網。上げると粗い網点になります。</p>
+            <label class="row span2">
+              <span class="row-label">網の効き</span>
+              <input type="range" data-param="ditherAmount" min="0" max="1" step="0.05">
+              <span class="row-val" data-for="ditherAmount"></span>
+            </label>
+            <p class="hint span2">ディザ（網）をどれだけ使うか。下げるほどベタ塗りに寄り、0 で網なしのただの減色になります。</p>
+          </div>
+        </section>
+
+        <!-- Adjust -->
+        <section class="card group">
+          <h2 class="group-title">調整</h2>
+          <div class="grid">
+            <label class="row span2">
+              <span class="row-label">明るさ</span>
+              <input type="range" data-param="brightness" min="-100" max="100" step="1">
+              <span class="row-val" data-for="brightness"></span>
+            </label>
+            <label class="row span2">
+              <span class="row-label">コントラスト</span>
+              <input type="range" data-param="contrast" min="-100" max="100" step="1">
+              <span class="row-val" data-for="contrast"></span>
+            </label>
+            <label class="row span2">
+              <span class="row-label">ガンマ</span>
+              <input type="range" data-param="gamma" min="0.2" max="3" step="0.05">
+              <span class="row-val" data-for="gamma"></span>
+            </label>
+            <label class="row col span2">
+              <span class="row-label">エッジ強調</span>
+              <select data-param="edge">
+                <option value="0">なし</option>
+                <option value="1">弱</option>
+                <option value="2">中</option>
+                <option value="3">強</option>
+              </select>
+            </label>
+            <label class="row span2">
+              <span class="row-label">輪郭線</span>
+              <input type="range" data-param="outline" min="0" max="1" step="0.05">
+              <span class="row-val" data-for="outline"></span>
+            </label>
+            <p class="hint span2">主線のない絵（写真や塗りだけの絵）に。輪郭を拾って黒く落とします。</p>
+            <label class="row span2">
+              <span class="row-label">なじませ</span>
+              <input type="range" data-param="errorMix" min="0" max="1" step="0.05">
+              <span class="row-val" data-for="errorMix"></span>
+            </label>
+            <p class="hint span2">0 = 濃さごとにベタっと網が切り替わる（うごメモっぽい）。上げるとグラデーションがなめらかになります。</p>
+          </div>
+        </section>
+
+        <!-- Export -->
+        <section class="card group export">
+          <h2 class="group-title">書き出し</h2>
+          <div class="grid">
+            <label class="row col span2">
+              <span class="row-label">ファイル名</span>
+              <div class="name-row">
+                <input type="text" id="baseName" class="num" placeholder="image">
+                <span class="row-unit">_amisketch.png</span>
+              </div>
+            </label>
+            <label class="row span2">
+              <span class="row-label">拡大</span>
+              <input type="range" data-param="exportScale" min="1" max="12" step="1">
+              <span class="row-val" data-for="exportScale"></span>
+            </label>
+            <p class="hint span2">書き出しサイズ: <span id="exportSize">–</span></p>
+          </div>
+          <button class="export-btn primary" id="exportPng">PNG保存</button>
+          <div class="export-grid">
+            <button class="export-btn" id="copyPng">クリップボードにコピー</button>
+            <button class="export-btn" id="exportPalette">パレットをコピー</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      すべてブラウザ内で処理され、画像はアップロードされません。
+    </footer>
+  </div>
+
+  <script type="module" src="./src/ami/app.js"></script>
+</body>
+</html>

@@ -1,41 +1,14 @@
-/* KiriSketch-only additions on top of the shared style.css. */
+/* ばらばら 固有のスタイル（共通の style.css の上に乗る） */
 
-/* Wordmark stands in for UgoSketch's logo gif. */
-.wordmark {
-  margin: 0;
-  font-size: 34px;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--accent);
-  font-weight: 800;
-}
-.wordmark span { color: var(--text); }
-
-/* Preview + results want the wide column here; the controls are the sidebar.
-   Guarded so the shared single-column mobile rule still wins below 900px. */
-@media (min-width: 901px) {
-  .layout { grid-template-columns: minmax(0, 1fr) 340px; }
-}
-/* The sidebar is too narrow for the shared two-up rows — stack them. */
-.panel .grid { grid-template-columns: 1fr; gap: 9px; }
-.panel .grid .span2 { grid-column: auto; }
-.preview { position: static; top: auto; }
-
-/* The stage shows one still image, so give it room and let it scroll at 1x+. */
-#stage {
-  height: 380px;
-  overflow: auto;
-  align-items: safe center;
-  justify-content: safe center;
-}
-#previewCanvas { max-width: none; max-height: none; flex: none; cursor: pointer; }
+/* ステージは 1 枚の静止画。はみ出した分はドラッグで動かす（src/viewer.js）。 */
+#stage { height: 380px; }
+#previewCanvas { cursor: pointer; }
 #previewCanvas.picking { cursor: crosshair; }
 
 .name-row { display: flex; align-items: center; gap: 8px; }
 .name-row .num { flex: 1; }
 
-/* ---------- Results ---------- */
-.results { border-top: 1px solid var(--line); padding-top: 12px; }
+/* ---------- 切り出し結果 ---------- */
 .results-head {
   display: flex;
   align-items: center;
@@ -46,10 +19,8 @@
 .results-head .group-title { margin: 0; }
 .results-actions { margin-left: auto; display: flex; gap: 6px; }
 .count-pill {
-  color: var(--text);
+  color: var(--accent-deep);
   letter-spacing: 0;
-  text-transform: none;
-  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
@@ -62,9 +33,9 @@
 }
 .thumb {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 4px;
-  background: var(--panel-2);
+  background: var(--sheet);
 }
 .thumb.off { opacity: 0.35; border-style: dashed; }
 .thumb-img {
@@ -73,10 +44,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 5px;
-  background-color: #1a1e12;
+  border-radius: 4px;
+  background-color: #ebe6d8;
   background-image:
-    conic-gradient(#242a18 25%, transparent 0 50%, #242a18 0 75%, transparent 0);
+    conic-gradient(#f7f3e8 25%, transparent 0 50%, #f7f3e8 0 75%, transparent 0);
   background-size: 12px 12px;
   overflow: hidden;
 }
@@ -101,14 +72,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.thumb-bar .mini-btn { padding: 1px 6px; font-size: 11px; line-height: 1.4; }
-
-#pickFromImage.holding {
-  background: var(--accent);
-  color: var(--ink);
-  border-color: var(--accent);
-}
+.thumb-bar .mini-btn { padding: 1px 6px; font-size: 11px; line-height: 1.4; box-shadow: none; }
 
 @media (max-width: 900px) {
-  #stage { height: 300px; }
+  #stage { height: 32vh; min-height: 180px; }
+  .thumb-grid { max-height: 300px; }
 }

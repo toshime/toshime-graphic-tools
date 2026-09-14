@@ -4,6 +4,7 @@
 import { DEFAULTS, prepareSource, generateFrames, playbackOrder } from './pipeline.js';
 import { FIELD_TYPES, PRESETS } from './field.js';
 import { exportPngSequence, exportSpriteSheet, exportGif, upscaleFrames } from './export.js';
+import { createStageView } from './viewer.js';
 
 // ---- state ----------------------------------------------------------------
 const state = { ...DEFAULTS };
@@ -223,13 +224,11 @@ function updatePixelPerfectUI() {
 
 // Preview backdrop only. Purely visual, never affects exported frames.
 function setBackground(mode, color) {
-  if (mode === 'checker') {
-    canvas.style.background = ''; // fall back to the CSS conic-gradient
-  } else {
-    const c = mode === 'white' ? '#fff' : mode === 'black' ? '#000' : color;
-    canvas.style.backgroundImage = 'none';
-    canvas.style.backgroundColor = c;
-  }
+  // 窓（ステージ）に敷く。画像が小さくても下地が見えるので、拡大・縮小しても
+  // 「何色の上に置いているか」が変わらない。
+  stage.classList.remove('bg-checker', 'bg-white', 'bg-black', 'bg-custom');
+  if (mode === 'custom') stage.style.setProperty('--stage-bg', color);
+  stage.classList.add(`bg-${mode}`);
   document.querySelectorAll('#bgGroup .bg').forEach((b) => {
     b.classList.toggle('active', b.dataset.bg === mode);
   });
@@ -306,8 +305,18 @@ function renderPalette(palette) {
 let playing = true;
 let playIndex = 0;
 let lastTick = 0;
-let zoomMode = 'fit';
 let comparing = false;
+
+// プレビューの拡大・移動（ホイール / ドラッグ / ピンチ）。倍率だけ受け取り、
+// 描き直しはこちらの drawFrame に任せる。
+const view = createStageView({
+  stage,
+  canvas,
+  zoomGroup: $('#zoomGroup'),
+  onChange: () => drawFrame(),
+  fitMax: 32,
+  minZoom: 0.05,
+});
 
 function currentOrder() {
   return playbackOrder(currentFrames.length, state.pingPong);
@@ -319,20 +328,11 @@ function restartPlayback() {
   drawFrame(); // paint the first frame immediately, don't wait for the rAF tick
 }
 
-function computeZoom(fw, fh) {
-  if (zoomMode === 'fit') {
-    const bw = stage.clientWidth - 8;
-    const bh = stage.clientHeight - 8;
-    return Math.max(0.05, Math.min(bw / fw, bh / fh));
-  }
-  return Number(zoomMode);
-}
-
 function drawFrame() {
   if (comparing && sourceImage) {
     // Show the raw source (no warp) at the same zoom footprint.
     const fw = sourceImage.width, fh = sourceImage.height;
-    const z = computeZoom(fw, fh);
+    const z = view.zoomFor(fw, fh);
     canvas.classList.remove('empty');
     canvas.width = Math.round(fw * z);
     canvas.height = Math.round(fh * z);
@@ -346,7 +346,7 @@ function drawFrame() {
   const order = currentOrder();
   const idx = order[playIndex % order.length];
   const src = frameCanvases[idx];
-  const z = computeZoom(src.width, src.height);
+  const z = view.zoomFor(src.width, src.height);
   canvas.classList.remove('empty');
   canvas.width = Math.round(src.width * z);
   canvas.height = Math.round(src.height * z);
@@ -560,16 +560,6 @@ function wireEvents() {
     lastTick = 0;
   });
 
-  // zoom
-  document.querySelectorAll('#zoomGroup .zoom').forEach((b) => {
-    b.addEventListener('click', () => {
-      zoomMode = b.dataset.zoom;
-      document.querySelectorAll('#zoomGroup .zoom').forEach((x) => x.classList.remove('active'));
-      b.classList.add('active');
-      drawFrame();
-    });
-  });
-
   // compare (hold)
   const startCompare = () => { comparing = true; compareBtn.classList.add('holding'); };
   const endCompare = () => { comparing = false; compareBtn.classList.remove('holding'); };
@@ -612,6 +602,7 @@ function init() {
   syncControls();
   setMode(state.mode);   // honour the restored mode (defaults to 'warp')
   setExportEnabled(false);
+  setBackground('checker');
   canvas.classList.add('empty');
   playToggle.textContent = '⏸';
   requestAnimationFrame(tick);

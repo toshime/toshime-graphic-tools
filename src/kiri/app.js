@@ -4,6 +4,7 @@
 
 import { detectRegions, gridRegions, autoBackground, buildMask, trimBox, padBox, sortBoxes } from './detect.js';
 import { createZip } from '../zip.js';
+import { createStageView } from '../viewer.js';
 
 // ---- defaults / state -----------------------------------------------------
 const DEFAULTS = {
@@ -64,9 +65,18 @@ const dropzone = $('#dropzone');
 const fileInput = $('#fileInput');
 const thumbGrid = $('#thumbGrid');
 
-let zoomMode = 'fit';
 let showBoxes = true;
 let pickingColor = false;
+
+// プレビューの拡大・移動（ホイール / ドラッグ / ピンチ）。
+const view = createStageView({
+  stage,
+  canvas,
+  zoomGroup: $('#zoomGroup'),
+  onChange: () => drawPreview(),
+  fitMax: 8,
+  minZoom: 0.02,
+});
 
 // ---------------------------------------------------------------------------
 // Two-way binding between [data-param] inputs and `state`
@@ -318,18 +328,9 @@ function regionCanvas(box, scale = 1) {
 // ---------------------------------------------------------------------------
 // Preview
 // ---------------------------------------------------------------------------
-function computeZoom(w, h) {
-  if (zoomMode === 'fit') {
-    const bw = stage.clientWidth - 8;
-    const bh = stage.clientHeight - 8;
-    return Math.max(0.02, Math.min(bw / w, bh / h, 8));
-  }
-  return Number(zoomMode);
-}
-
 function drawPreview() {
   if (!sourceImage) return;
-  const z = computeZoom(sourceImage.width, sourceImage.height);
+  const z = view.zoomFor(sourceImage.width, sourceImage.height);
   canvas.classList.remove('empty');
   canvas.width = Math.max(1, Math.round(sourceImage.width * z));
   canvas.height = Math.max(1, Math.round(sourceImage.height * z));
@@ -338,6 +339,13 @@ function drawPreview() {
   ctx.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
   if (!showBoxes) return;
 
+  // 枠の色はページのテーマ（ツール色）から拾う。CSS 側で色を変えても追従する。
+  const css = getComputedStyle(document.body);
+  const theme = {
+    accent: css.getPropertyValue('--accent-deep').trim() || '#c46a1a',
+    warn: css.getPropertyValue('--warn').trim() || '#d4573f',
+    ink: css.getPropertyValue('--sheet').trim() || '#fffdf6',
+  };
   ctx.lineWidth = 1;
   ctx.font = '10px system-ui, sans-serif';
   ctx.textBaseline = 'top';
@@ -354,7 +362,7 @@ function drawPreview() {
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(x, y, w, h);
     }
-    ctx.strokeStyle = off ? 'rgba(255,159,107,0.9)' : 'rgba(186,242,0,0.9)';
+    ctx.strokeStyle = off ? theme.warn : theme.accent;
     ctx.setLineDash(off ? [3, 3] : []);
     ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
     ctx.setLineDash([]);
@@ -362,9 +370,9 @@ function drawPreview() {
     if (labelled && w > 16 && h > 12) {
       const label = String(i + 1);
       const tw = ctx.measureText(label).width;
-      ctx.fillStyle = off ? 'rgba(255,159,107,0.85)' : 'rgba(186,242,0,0.85)';
+      ctx.fillStyle = off ? theme.warn : theme.accent;
       ctx.fillRect(x, y, tw + 6, 13);
-      ctx.fillStyle = '#070900';
+      ctx.fillStyle = theme.ink;
       ctx.fillText(label, x + 3, y + 2);
     }
   });
@@ -583,13 +591,9 @@ function onCanvasClick(e) {
 }
 
 function setBackground(mode) {
-  if (mode === 'checker') {
-    canvas.style.backgroundImage = '';
-    canvas.style.backgroundColor = '';
-  } else {
-    canvas.style.backgroundImage = 'none';
-    canvas.style.backgroundColor = mode === 'white' ? '#fff' : '#000';
-  }
+  // 窓（ステージ）に敷く。画像が窓より小さくても下地が見える。
+  stage.classList.remove('bg-checker', 'bg-white', 'bg-black');
+  stage.classList.add(`bg-${mode}`);
   document.querySelectorAll('#bgGroup .bg').forEach((b) => {
     b.classList.toggle('active', b.dataset.bg === mode);
   });
@@ -624,14 +628,6 @@ function wireEvents() {
   $('#saveConfig').addEventListener('click', saveConfig);
   $('#resetConfig').addEventListener('click', resetConfig);
 
-  document.querySelectorAll('#zoomGroup .zoom').forEach((b) => {
-    b.addEventListener('click', () => {
-      zoomMode = b.dataset.zoom;
-      document.querySelectorAll('#zoomGroup .zoom').forEach((x) => x.classList.remove('active'));
-      b.classList.add('active');
-      drawPreview();
-    });
-  });
   document.querySelectorAll('#bgGroup .bg').forEach((b) => {
     b.addEventListener('click', () => setBackground(b.dataset.bg));
   });
@@ -670,7 +666,6 @@ function wireEvents() {
 
   $('#exportZip').addEventListener('click', exportZip);
 
-  window.addEventListener('resize', () => { if (zoomMode === 'fit') drawPreview(); });
 }
 
 // ---------------------------------------------------------------------------
@@ -682,6 +677,7 @@ function init() {
   loadConfig();
   syncControls();
   updateCounts();
+  setBackground('checker');
   canvas.classList.add('empty');
 }
 

@@ -1,16 +1,41 @@
+/* うごスケッチ 共通スタイル
+ *
+ * 方向: 「メモ帳」。明るい紙の上に、ツールごとに色の違うインデックスタブと
+ * 帯見出しが乗っている。うごメモ（動くメモ帳）が出発点なので、見出しは
+ * ピクセルフォント (DotGothic16)、ページ地には薄い網点の紙目、プレビューは
+ * 濃い縁の「窓」。押せるものは押すとへこむ。
+ *
+ * ツールの色は body[data-tool] で色相だけ差し替える。明度・彩度は共通なので
+ * 3 つ並んでも同じ重さに見える。
+ */
 :root {
-  --bg: #0e100a;
-  --panel: #161a10;
-  --panel-2: #1e2414;
-  --line: #2a3018;
-  --text: #d8dcc8;
-  --muted: #7a8264;
-  --accent: #baf200;
-  --accent-dim: #384700;
-  --ink: #070900;
-  --warn: #ff9f6b;
-  --radius: 10px;
-  --font: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  --paper: #f6f3ea;          /* ページの地。少し黄みの紙 */
+  --sheet: #fffdf6;          /* カード（1 枚の紙） */
+  --well: #efeadc;           /* へこんだ面（入力欄、ステージの地） */
+  --line: #ddd7c8;           /* 薄い罫線 */
+  --line-2: #b8b1a0;         /* ボタンの縁 */
+  --ink: #1f1c30;            /* 濃い青紫寄りの黒 */
+  --ink-2: #3d3a52;          /* 本文 */
+  --muted: #7d7990;
+  --warn: #d4573f;
+  --grain: rgba(31, 28, 48, 0.07);
+
+  --hue: 50;                 /* ツールごとに上書き */
+
+  --radius: 6px;
+  --font: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --font-display: "DotGothic16", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+}
+body[data-tool="yura"] { --hue: 50; }    /* 橙: ゆらゆら */
+body[data-tool="bara"] { --hue: 350; }   /* 桃: ばらばら */
+body[data-tool="kero"] { --hue: 140; }   /* 緑: けろけろ */
+/* --hue を差し替える要素（body と各タブ）の上で組み立てる。:root に書くと
+   色相 50 で解決済みの値が継承されて、全ページ橙になる。 */
+body, .tool-link {
+  --accent: oklch(0.76 0.16 var(--hue));
+  --accent-deep: oklch(0.5 0.15 var(--hue));
+  --accent-soft: oklch(0.955 0.035 var(--hue));
+  --accent-line: oklch(0.86 0.09 var(--hue));
 }
 
 * { box-sizing: border-box; }
@@ -21,71 +46,107 @@ html, body {
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background-color: var(--paper);
+  /* 紙目。網点ツールの前口上でもある */
+  background-image: radial-gradient(var(--grain) 0.7px, transparent 0.9px);
+  background-size: 6px 6px;
+  color: var(--ink-2);
   font-family: var(--font);
   font-size: 13px;
+  line-height: 1.5;
 }
 
 /* ---------- App shell ---------- */
 .app {
-  max-width: 1100px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 0 16px 48px;
+  padding: 0 16px 56px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* ---------- Header ---------- */
+/* ---------- Header: 名前とタブ ---------- */
 .app-header {
-  padding: 24px 4px 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 28px 4px 0;
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--ink);
+}
+.brand {
   display: flex;
   align-items: baseline;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
+  padding-bottom: 14px;
 }
-.app-header .logo {
-  height: 72px;
-  width: auto;
-  image-rendering: pixelated;
-  display: block;
+.wordmark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  /* マーカーで引いた帯 */
+  background: linear-gradient(transparent 58%, var(--accent) 58%);
+  padding: 0 4px;
 }
+/* 桃・緑の帯の上では、青紫寄りの墨より真っ黒のほうが字が締まる */
+body[data-tool="bara"] .wordmark,
+body[data-tool="kero"] .wordmark { color: #000; }
 .tagline {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
 }
 
-/* ---------- Tool switcher (shared by every tool page) ---------- */
+/* インデックスタブ。ページ下端の罫線に貼りついていて、開いているタブだけ
+   罫線とつながる。各タブは自分のツール色を持つ。 */
 .tool-nav {
   margin-left: auto;
   display: flex;
   gap: 6px;
-  align-self: center;
+  align-items: flex-end;
 }
 .tool-link {
   display: block;
-  padding: 6px 13px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--panel-2);
-  color: var(--muted);
-  font-size: 12px;
+  padding: 8px 16px 9px;
+  margin-bottom: -2px;
+  border: 2px solid var(--accent-line);
+  border-bottom-color: var(--ink);
+  border-radius: 8px 8px 0 0;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1;
   text-decoration: none;
+  transition: transform 0.08s;
 }
-.tool-link:hover { border-color: var(--accent); color: var(--accent); }
+.tool-link[data-tool="yura"] { --hue: 50; }
+.tool-link[data-tool="bara"] { --hue: 350; }
+.tool-link[data-tool="kero"] { --hue: 140; }
+.tool-link:hover { transform: translateY(-2px); }
 .tool-link.active {
-  border-color: var(--accent);
-  background: var(--accent-dim);
-  color: var(--accent);
+  border-color: var(--ink);
+  border-bottom-color: var(--sheet);
+  background: var(--accent);
+  color: var(--ink);
+  padding-top: 11px;
 }
+.tool-link.active:hover { transform: none; }
 
 /* ---------- Layout ---------- */
+/* 左: プレビュー（画面に貼りつく）, 右: 操作パネル。ばらばらの切り出し結果は
+   左列のプレビューの下に落ちる。 */
 .layout {
   display: grid;
-  grid-template-columns: 380px minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
   align-items: start;
 }
 .panel {
@@ -94,44 +155,73 @@ body {
   gap: 16px;
   min-width: 0;
 }
+/* sticky は自分のグリッド領域（＝パネルと同じ高さの行）の中で効く。
+   プレビューの下に別のカードがあるページは .main-col で包み、列の高さ
+   いっぱいに伸ばして、その中で貼りつかせる。 */
+.preview {
+  position: sticky;
+  top: 12px;
+  min-width: 0;
+  z-index: 2;
+}
+.main-col { align-self: stretch; min-width: 0; }
+.main-col .preview { margin-bottom: 20px; }
+.results-card { min-width: 0; }
 
-/* ---------- Card ---------- */
+/* ---------- Card: 1 枚の紙 ---------- */
 .card {
-  background: var(--panel);
+  background: var(--sheet);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 16px;
+  box-shadow: 0 1px 0 var(--line), 0 8px 18px -12px rgba(31, 28, 48, 0.25);
 }
 
-/* ---------- Preview ---------- */
+/* ---------- Preview: 窓 ---------- */
 .preview {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  position: sticky;
-  top: 16px;
 }
 .stage {
   position: relative;
-  height: 320px;
+  height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ink);
-  border: 1px solid var(--line);
+  background: var(--well);
+  border: 2px solid var(--ink);
   border-radius: var(--radius);
   overflow: hidden;
+  min-width: 0;
+  /* 画像の上でのホイールは拡大縮小に使う。指 1 本の縦スワイプはページの
+     スクロールに残し、はみ出しているとき (.pannable) だけ全方向を受け取る。 */
+  touch-action: pan-y;
 }
+.stage.pannable { touch-action: none; }
+
+/* 画像の下地（市松 / 白 / 黒 / 任意色）。窓いっぱいに敷くので、画像が窓より
+   小さくても「いま何色の上に置いているか」が見える。画像が入るまでは出さない。 */
+.stage.has-art.bg-checker {
+  /* 透明部分に見える市松。紙より少しだけ沈んだ色 */
+  background-color: #ebe6d8;
+  background-image:
+    conic-gradient(#f7f3e8 25%, transparent 0 50%, #f7f3e8 0 75%, transparent 0);
+  background-size: 16px 16px;
+}
+.stage.has-art.bg-white { background: #ffffff; }
+.stage.has-art.bg-custom { background: var(--stage-bg, var(--well)); }
+.stage.has-art.bg-black { background: #111111; }
+
 #previewCanvas {
   image-rendering: pixelated;
-  /* checkerboard shows through transparent pixels (dark, low-chroma) */
-  background-color: #1a1e12;
-  background-image:
-    conic-gradient(#242a18 25%, transparent 0 50%, #242a18 0 75%, transparent 0);
-  background-size: 16px 16px;
-  max-width: 100%;
-  max-height: 100%;
+  flex: none;
+  /* 拡大時は窓からはみ出させて、ドラッグで動かす（src/viewer.js） */
+  max-width: none;
+  max-height: none;
 }
+.stage.pannable #previewCanvas:not(.picking) { cursor: grab; }
+.stage.dragging #previewCanvas { cursor: grabbing; }
 #previewCanvas.empty { display: none; }
 
 .dropzone {
@@ -144,17 +234,22 @@ body {
   color: var(--muted);
 }
 .dropzone.hidden { display: none; }
-.stage.dragover .dropzone { color: var(--accent); }
-.stage.dragover { border-color: var(--accent); }
+.stage.dragover,
+.stage.has-art.dragover {
+  border-color: var(--accent-deep);
+  background: var(--accent-soft);
+  background-image: none;
+}
+.stage.dragover .dropzone { color: var(--accent-deep); }
 .dz-inner { text-align: center; }
-.dz-icon { font-size: 42px; color: var(--accent); margin-bottom: 8px; }
-.dz-main { margin: 0 0 4px; font-size: 15px; color: var(--text); }
+.dz-icon { font-size: 42px; color: var(--accent-deep); margin-bottom: 8px; line-height: 1; }
+.dz-main { margin: 0 0 4px; font-size: 15px; color: var(--ink); font-family: var(--font-display); }
 .dz-sub { margin: 0; font-size: 12px; }
 
 .progress {
   position: absolute;
   left: 0; top: 0; right: 0;
-  height: 3px;
+  height: 4px;
   background: transparent;
   opacity: 0;
   transition: opacity 0.2s;
@@ -163,9 +258,67 @@ body {
 .progress-bar {
   height: 100%;
   width: 0;
-  background: var(--accent);
+  background: var(--accent-deep);
   transition: width 0.1s linear;
 }
+
+/* ---------- Buttons: 押すとへこむ ---------- */
+.pb-btn,
+.preset-btn,
+.mini-btn,
+.tab,
+.export-btn {
+  background: var(--sheet);
+  color: var(--ink-2);
+  border: 1.5px solid var(--line-2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-family: var(--font);
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--line-2);
+  transition: transform 0.06s, box-shadow 0.06s, background-color 0.12s, border-color 0.12s;
+}
+.pb-btn:hover,
+.preset-btn:hover,
+.mini-btn:hover,
+.tab:hover,
+.export-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+.pb-btn:active,
+.preset-btn:active,
+.mini-btn:active,
+.tab:active,
+.export-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+.pb-btn:disabled,
+.export-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 0 var(--line-2);
+  border-color: var(--line-2);
+  color: var(--ink-2);
+}
+/* 選択中: ツール色で塗る */
+.pb-btn.active,
+.pb-btn.zoom.active,
+.pb-btn.bg.active,
+.tab.active,
+.holding {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+.mini-btn { border-radius: 6px; padding: 4px 9px; font-size: 12px; }
+.mini-btn.holding { background: var(--accent); border-color: var(--ink); color: var(--ink); }
 
 /* ---------- Play bar ---------- */
 .playbar {
@@ -174,26 +327,13 @@ body {
   gap: 8px;
   flex-wrap: wrap;
 }
-.pb-btn {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 5px 11px;
-  font-size: 12px;
-  font-family: var(--font);
-  cursor: pointer;
-}
-.pb-btn:hover { border-color: var(--accent); }
-.pb-btn:active { background: var(--accent-dim); }
-
 .config-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
-.config-status { color: var(--accent); font-size: 11px; }
+.config-status { color: var(--accent-deep); font-size: 11px; }
 .frame-count {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
@@ -201,38 +341,40 @@ body {
 }
 .spacer { flex: 1; }
 .zoom-group { display: flex; gap: 4px; }
-.pb-btn.zoom.active { border-color: var(--accent); color: var(--accent); }
-#compareBtn.holding { background: var(--accent); color: var(--ink); border-color: var(--accent); }
 
 .bg-group { display: flex; align-items: center; gap: 4px; }
 .bg-label { color: var(--muted); font-size: 11px; margin-right: 2px; }
-.pb-btn.bg.active { border-color: var(--accent); color: var(--accent); }
 .bg-color {
   width: 26px;
   height: 26px;
   padding: 0;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line-2);
   border-radius: 999px;
   background: none;
   cursor: pointer;
 }
-.bg-color.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.bg-color.active { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
 
-/* ---------- Control groups ---------- */
+/* ---------- Control groups: 帯見出し ---------- */
 .group-title {
+  display: inline-block;
   margin: 0 0 12px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--accent);
+  padding: 3px 10px 2px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: 3px;
 }
 
 /* Two-column dense grid inside a section */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px 20px;
+  gap: 10px 20px;
   align-items: center;
 }
 .grid .span2 { grid-column: 1 / -1; }
@@ -252,7 +394,7 @@ body {
 .row input[type="range"] {
   flex: 1;
   min-width: 0;
-  accent-color: var(--accent);
+  accent-color: var(--accent-deep);
   height: 4px;
 }
 .row input[type="range"]:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -261,44 +403,35 @@ body {
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-size: 12px;
-  color: var(--accent);
+  color: var(--accent-deep);
+  font-weight: 600;
 }
 .row.check {
   align-items: center;
   gap: 8px;
 }
-.row.check input { accent-color: var(--accent); }
+.row.check input { accent-color: var(--accent-deep); }
 .row.check span { font-size: 12px; }
 
 select, .num {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  background: var(--well);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
   padding: 6px 8px;
   font-size: 12px;
   font-family: var(--font);
 }
 select { width: 100%; }
-select:focus, .num:focus { outline: none; border-color: var(--accent); }
+select:focus, .num:focus { outline: none; border-color: var(--accent-deep); box-shadow: 0 0 0 2px var(--accent-soft); }
 .num { flex: 1; min-width: 0; }
 .row-unit { flex: 0 0 auto; color: var(--muted); font-size: 11px; }
-
-.mini-btn {
-  background: var(--panel-2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  cursor: pointer;
-  padding: 4px 8px;
-  font-size: 13px;
-}
-.mini-btn:hover { border-color: var(--accent); }
 
 .hint {
   margin: 0;
   font-size: 11px;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 .warn {
   margin: 10px 0 0;
@@ -308,36 +441,10 @@ select:focus, .num:focus { outline: none; border-color: var(--accent); }
 
 /* ---------- Presets ---------- */
 .preset-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.preset-btn {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 13px;
-  font-size: 12px;
-  cursor: pointer;
-  font-family: var(--font);
-}
-.preset-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ---------- Tabs ---------- */
+/* ---------- Tabs (モード切替) ---------- */
 .tabs { display: flex; gap: 8px; }
-.tab {
-  flex: 1;
-  background: var(--panel-2);
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 8px 6px;
-  font-size: 12px;
-  cursor: pointer;
-  font-family: var(--font);
-}
-.tab.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
+.tab { flex: 1; padding: 8px 6px; text-align: center; }
 
 /* ---------- Swatches ---------- */
 .swatches {
@@ -350,7 +457,7 @@ select:focus, .num:focus { outline: none; border-color: var(--accent); }
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  border: 1px solid rgba(0,0,0,0.4);
+  border: 1px solid rgba(31, 28, 48, 0.35);
 }
 
 /* ---------- Export ---------- */
@@ -363,49 +470,62 @@ select:focus, .num:focus { outline: none; border-color: var(--accent); }
   display: block;
   width: 100%;
   padding: 10px;
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 999px;
   font-size: 13px;
-  cursor: pointer;
-  font-family: var(--font);
 }
-.export-btn:hover { border-color: var(--accent); color: var(--accent); }
 .export-btn.primary {
   margin: 14px 0 10px;
   padding: 13px;
   background: var(--accent);
   color: var(--ink);
-  border-color: var(--accent);
-  font-weight: 700;
-  font-size: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  box-shadow: 3px 3px 0 var(--ink);
 }
 .export-btn.primary:hover {
-  background: #cdff33;
-  border-color: #cdff33;
-  color: var(--ink);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
 }
-.export-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  border-color: var(--line);
-  color: var(--text);
+.export-btn.primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
 }
+.export-btn.primary:disabled { transform: none; box-shadow: 3px 3px 0 var(--ink); }
 
 /* ---------- Footer ---------- */
 .app-footer {
-  margin-top: 24px;
+  margin-top: 28px;
   padding: 12px 4px 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px dashed var(--line-2);
   color: var(--muted);
   font-size: 11px;
 }
 
-/* ---------- Narrow: single column, preview on top ---------- */
+/* ---------- Narrow: 1 列。プレビューは上に貼りつく ---------- */
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .preview { position: static; top: auto; }
+  /* 1 列。flex にするとプレビューの sticky の基準が .layout 全体になり、
+     操作パネルを最後までスクロールしても上に残る。 */
+  .layout { display: flex; flex-direction: column; gap: 16px; }
+  .main-col { display: contents; }
+  .main-col .preview { margin-bottom: 0; }
+  .preview { order: 0; }
+  .panel { order: 1; }
+  .results-card { order: 2; }
+  .preview {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* 紙の縁までいっぱいに広げて、下を流れる操作パネルを隠す */
+    margin: 0 -8px;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: 0 10px 18px -10px rgba(31, 28, 48, 0.35);
+  }
+  .stage { height: 32vh; min-height: 180px; }
+  .app-header { padding-top: 18px; gap: 12px; }
+  .tool-nav { margin-left: 0; width: 100%; }
+  .tool-link { flex: 1; text-align: center; padding-left: 8px; padding-right: 8px; }
 }
 
 /* ---------- Mobile ---------- */
@@ -413,5 +533,5 @@ select:focus, .num:focus { outline: none; border-color: var(--accent); }
   .grid { grid-template-columns: 1fr; gap: 9px; }
   .grid .span2 { grid-column: auto; }
   .export-grid { grid-template-columns: 1fr; }
-  .app-header .logo { height: 60px; }
+  .wordmark { font-size: 28px; }
 }

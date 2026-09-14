@@ -3,18 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UgoSketch</title>
-  <link rel="icon" href="./assets/ugosketch.gif">
+  <title>ゆらゆら</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='6' fill='%23f0913f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
+<body data-tool="yura">
   <div class="app">
     <header class="app-header">
-      <img class="logo" src="./assets/ugosketch.gif" alt="UgoSketch">
-      <p class="tagline">画像を手描き風に揺らしてスプライトシートに</p>
-      <nav class="tool-nav">
-        <a class="tool-link active" href="./index.html">UgoSketch</a>
-        <a class="tool-link" href="./kirisketch.html">KiriSketch</a>
+      <div class="brand">
+        <h1 class="wordmark">ゆらゆら</h1>
+        <p class="tagline">画像を手描き風に揺らしてスプライトシートに</p>
+      </div>
+      <nav class="tool-nav" aria-label="ツール">
+        <a class="tool-link active" data-tool="yura" href="./index.html">ゆらゆら</a>
+        <a class="tool-link" data-tool="bara" href="./kirisketch.html">ばらばら</a>
+        <a class="tool-link" data-tool="kero" href="./amisketch.html">けろけろ</a>
       </nav>
     </header>
 
