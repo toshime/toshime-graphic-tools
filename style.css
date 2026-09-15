@@ -44,6 +44,8 @@ html, body {
   margin: 0;
   min-height: 100%;
 }
+/* 見出しの帯を画面の端まで伸ばすのに 100vw を使う。はみ出しぶんは切る。 */
+html { overflow-x: clip; }
 
 body {
   background-color: var(--paper);
@@ -67,13 +69,33 @@ body {
 }
 
 /* ---------- Header: 名前とタブ ---------- */
+/* 上端に貼りついたまま。高さは src/shell.js が --header-h に書き出していて、
+   下のプレビューはその分だけ下げて貼りつく。 */
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: flex-end;
   gap: 24px;
   flex-wrap: wrap;
-  padding: 28px 4px 0;
+  padding: 18px 4px 0;
   margin-bottom: 18px;
+}
+/* 地は画面の端まで。下を流れる紙が横から覗かないように、ページと同じ紙目で
+   塗りつぶして、罫線もここに引く。 */
+.app-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  z-index: -1;
+  background-color: var(--paper);
+  background-image: radial-gradient(var(--grain) 0.7px, transparent 0.9px);
+  background-size: 6px 6px;
   border-bottom: 2px solid var(--ink);
 }
 .brand {
@@ -160,7 +182,7 @@ body[data-tool="kero"] .wordmark { color: #000; }
    いっぱいに伸ばして、その中で貼りつかせる。 */
 .preview {
   position: sticky;
-  top: 12px;
+  top: calc(var(--header-h, 0px) + 12px);
   min-width: 0;
   z-index: 2;
 }
@@ -185,7 +207,10 @@ body[data-tool="kero"] .wordmark { color: #000; }
 }
 .stage {
   position: relative;
-  height: 340px;
+  /* 既定は 16:10。右下の角をドラッグすると高さを変えられる（src/viewer.js が
+     inline の height を入れる）。 */
+  aspect-ratio: 16 / 10;
+  min-height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,6 +248,25 @@ body[data-tool="kero"] .wordmark { color: #000; }
 .stage.pannable #previewCanvas:not(.picking) { cursor: grab; }
 .stage.dragging #previewCanvas { cursor: grabbing; }
 #previewCanvas.empty { display: none; }
+
+/* 右下の角つまみ。斜めの筋 2 本だけの控えめなもの。 */
+.stage-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  /* 見た目は 16px 角だけど、つまみやすいように当たりは少し大きく取る */
+  width: 24px;
+  height: 24px;
+  z-index: 6;
+  cursor: ns-resize;
+  opacity: 0.4;
+  background-image: repeating-linear-gradient(135deg, var(--ink) 0 1.5px, transparent 1.5px 5px);
+  background-size: 15px 15px;
+  background-position: right 1px bottom 1px;
+  background-repeat: no-repeat;
+  touch-action: none;
+}
+.stage-resize:hover { opacity: 0.85; }
 
 .dropzone {
   position: absolute;
@@ -354,6 +398,10 @@ body[data-tool="kero"] .wordmark { color: #000; }
   cursor: pointer;
 }
 .bg-color.active { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
+/* 既定だと丸い枠の中に四角い色見本が入る。丸のまま塗りつぶす。 */
+.bg-color::-webkit-color-swatch-wrapper { padding: 0; }
+.bg-color::-webkit-color-swatch { border: none; border-radius: 999px; }
+.bg-color::-moz-color-swatch { border: none; border-radius: 999px; }
 
 /* ---------- Control groups: 帯見出し ---------- */
 .group-title {
@@ -515,15 +563,14 @@ select:focus, .num:focus { outline: none; border-color: var(--accent-deep); box-
   .results-card { order: 2; }
   .preview {
     position: sticky;
-    top: 0;
+    top: var(--header-h, 0px);
     z-index: 10;
     /* 紙の縁までいっぱいに広げて、下を流れる操作パネルを隠す */
     margin: 0 -8px;
     border-radius: 0 0 var(--radius) var(--radius);
     box-shadow: 0 10px 18px -10px rgba(31, 28, 48, 0.35);
   }
-  .stage { height: 32vh; min-height: 180px; }
-  .app-header { padding-top: 18px; gap: 12px; }
+  .app-header { padding-top: 12px; gap: 12px; }
   .tool-nav { margin-left: 0; width: 100%; }
   .tool-link { flex: 1; text-align: center; padding-left: 8px; padding-right: 8px; }
 }

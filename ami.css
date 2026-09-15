@@ -1,8 +1,5 @@
 /* けろけろ 固有のスタイル（共通の style.css の上に乗る） */
 
-/* ステージは 1 枚の静止画。はみ出した分はドラッグで動かす（src/viewer.js）。 */
-#stage { height: 380px; }
-
 .name-row { display: flex; align-items: center; gap: 8px; }
 .name-row .num { flex: 1; }
 
@@ -105,9 +102,6 @@
   border: 1px solid var(--ink);
 }
 
-@media (max-width: 900px) {
-  #stage { height: 32vh; min-height: 180px; }
-}
 @media (max-width: 600px) {
   .brush-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
 }

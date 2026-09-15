@@ -14,7 +14,61 @@
 // 画像を描き直す必要があるのは倍率が変わったときだけで、移動は transform だけで
 // 済む（再描画なし）。
 
-const DRAG_SLOP = 4;   // これ未満の動きは「クリック」として通す（ばらばらの枠選択）
+const DRAG_SLOP = 4;      // これ未満の動きは「クリック」として通す（ばらばらの枠選択）
+const CORNER = 26;       // 右下の角つまみのぶんだけ、移動の当たり判定から外す
+const MIN_STAGE_H = 140;
+const MAX_STAGE_H = 2000;
+const STAGE_KEY = 'ugosketch.stageHeight';   // 3 ツールで共通の窓の高さ
+
+/**
+ * 右下の角つまみ。ドラッグで窓の高さを変える（横幅は列に合わせたまま）。
+ * ダブルクリックで既定の 16:10 に戻す。高さはブラウザに覚えさせる。
+ */
+function addResizeGrip(stage, onResize) {
+  const grip = document.createElement('div');
+  grip.className = 'stage-resize';
+  grip.title = 'ドラッグで高さを変える / ダブルクリックで 16:10 に戻す';
+  stage.appendChild(grip);
+
+  const store = (v) => {
+    try {
+      if (v) localStorage.setItem(STAGE_KEY, String(v));
+      else localStorage.removeItem(STAGE_KEY);
+    } catch (e) { /* プライベートモードなどでは覚えないだけ */ }
+  };
+  try {
+    const saved = Number(localStorage.getItem(STAGE_KEY));
+    if (saved >= MIN_STAGE_H && saved <= MAX_STAGE_H) stage.style.height = `${saved}px`;
+  } catch (e) { /* 同上 */ }
+
+  grip.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();   // 画像の移動にはしない
+    const y0 = e.clientY;
+    const h0 = stage.getBoundingClientRect().height;
+    grip.setPointerCapture(e.pointerId);
+
+    const move = (ev) => {
+      const h = Math.min(MAX_STAGE_H, Math.max(MIN_STAGE_H, h0 + ev.clientY - y0));
+      stage.style.height = `${Math.round(h)}px`;
+      onResize();
+    };
+    const up = () => {
+      grip.removeEventListener('pointermove', move);
+      store(Math.round(stage.getBoundingClientRect().height));
+    };
+    grip.addEventListener('pointermove', move);
+    grip.addEventListener('pointerup', up, { once: true });
+    grip.addEventListener('pointercancel', up, { once: true });
+  });
+
+  grip.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    stage.style.height = '';
+    store(null);
+    onResize();
+  });
+}
 
 /**
  * @param {object}   o
@@ -192,6 +246,8 @@ export function createStageView({
   stage.addEventListener('pointerdown', (e) => {
     if (!hasArt()) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const r = stage.getBoundingClientRect();
+    if (e.clientX > r.right - CORNER && e.clientY > r.bottom - CORNER) return;   // 角つまみ
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 1) {
       drag = { id: e.pointerId, x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
@@ -263,8 +319,9 @@ export function createStageView({
   }
 
   // 窓の大きさが変わるとフィット倍率も変わる
-  const ro = new ResizeObserver(() => { if (hasArt()) { onChange(); schedule(); } });
-  ro.observe(stage);
+  const relayout = () => { if (hasArt()) { onChange(); schedule(); } };
+  new ResizeObserver(relayout).observe(stage);
+  addResizeGrip(stage, relayout);
 
   return {
     zoomFor,
