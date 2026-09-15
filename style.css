@@ -441,6 +441,9 @@ body[data-tool="kero"] .wordmark { color: #000; }
   align-items: center;
 }
 .grid .span2 { grid-column: 1 / -1; }
+/* スライダーは 2 列に押し込むと摘む場所がなくなるので、1 行まるごと使う。
+   数値入力・選択・チェックは 2 列のまま。 */
+.grid .row:has(input[type="range"]) { grid-column: 1 / -1; }
 
 .row {
   display: flex;
