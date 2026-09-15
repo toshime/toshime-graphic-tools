@@ -86,5 +86,6 @@ src/shell.js      貼りつく見出しの高さを CSS に渡すだけの小物
 src/*.js          ゆらゆら のパイプライン・書き出し
 src/bara/*.js     ばらばら の領域検出・UI
 src/kero/*.js     けろけろ のパターン定義・ディザ・UI
+assets/           ページ下部の 煙々創苑バナー
 assets/legacy/    旧ロゴ (ugosketch.gif、現在は未使用)
 ```
