@@ -62,7 +62,7 @@ body {
 .app {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 0 16px 36px;
+  padding: 0 16px 20px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -569,49 +569,17 @@ select:focus, .num:focus { outline: none; border-color: var(--accent-deep); box-
   font-size: 11px;
 }
 
-/* ---------- 煙々創苑バー ---------- */
-/* ページのいちばん下、紙の外。バナーが黒地なので帯ごと墨色にして、
-   ここから先はツールではなく「つくっているところ」だと分かるようにする。 */
+/* ---------- 煙々創苑バナー ---------- */
+/* ページのいちばん下、右端にそっと置くだけ。 */
 .enen-bar {
+  max-width: 1180px;
+  margin: 0 auto;
+  /* 横の余白は .app と同じ。カードの右端に揃う */
+  padding: 0 16px 28px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  flex-wrap: wrap;
-  padding: 20px 16px 24px;
-  background: var(--ink);
-  color: var(--paper);
+  justify-content: flex-end;
 }
-.enen-banner {
-  display: block;
-  line-height: 0;
-  border: 1px solid rgba(246, 243, 234, 0.35);
-  transition: transform 0.08s, border-color 0.12s;
-}
-.enen-banner:hover { transform: translateY(-2px); border-color: var(--paper); }
-.enen-banner:active { transform: translateY(0); }
-.enen-banner img { display: block; width: 200px; height: 60px; }
-
-.enen-text {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  font-size: 11px;
-  line-height: 1.5;
-}
-.enen-name {
-  font-family: var(--font-display);
-  font-size: 16px;
-  letter-spacing: 0.08em;
-  color: var(--paper);
-}
-.enen-sub { color: rgba(246, 243, 234, 0.7); }
-.enen-url {
-  color: rgba(246, 243, 234, 0.55);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-}
+.enen-bar img { display: block; width: 200px; height: 60px; }
 
 /* ---------- Narrow: 1 列。プレビューは上に貼りつく ---------- */
 @media (max-width: 900px) {
