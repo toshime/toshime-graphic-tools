@@ -1,4 +1,4 @@
-// AmiSketch UI. Loads one image, drops it to a chosen resolution, then prints
+// けろけろ UI. Loads one image, drops it to a chosen resolution, then prints
 // it with a handful of flat colours through うごメモ-style screen patterns.
 // Everything runs in the page — no build step, no deps.
 
@@ -345,7 +345,7 @@ function showUsage(usage, total) {
 // ---------------------------------------------------------------------------
 // Config persistence (localStorage)
 // ---------------------------------------------------------------------------
-const STORAGE_KEY = 'amisketch:params';
+const STORAGE_KEY = 'amisketch:params';   // 保存ずみの設定を捨てないよう、鍵は昔のまま
 let statusTimer = 0;
 
 function flashStatus(msg) {
@@ -596,7 +596,7 @@ async function withLabel(btn, msg, fn) {
 async function exportPng() {
   if (!result) return;
   const blob = await canvasToBlob(resultCanvas(state.exportScale));
-  download(blob, `${baseName || 'image'}_amisketch.png`);
+  download(blob, `${baseName || 'image'}_kerokero.png`);
 }
 
 async function copyPng(btn) {

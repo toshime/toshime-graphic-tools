@@ -1,4 +1,4 @@
-// Region detection for KiriSketch. Turns one image into a list of boxes:
+// Region detection for ばらばら. Turns one image into a list of boxes:
 // either by finding connected islands of non-background pixels, or by slicing
 // a regular grid. Everything here is pure geometry over an ImageData — no DOM.
 

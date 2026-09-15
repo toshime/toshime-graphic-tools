@@ -81,11 +81,12 @@ body {
   flex-wrap: wrap;
   padding: 18px 4px 0;
   margin-bottom: 18px;
-  /* 罫線は紙の幅（タブの右端）まで。地だけ画面の端まで伸ばす。 */
-  border-bottom: 2px solid var(--ink);
+  /* 罫線は ::after で引く（高さだけ透明の border で確保）。地の ::before は
+     この要素の背景より手前に描かれるので、border のままだと消えてしまう。 */
+  border-bottom: 2px solid transparent;
 }
 /* 地は画面の端まで。下を流れる紙が横から覗かないように、ページと同じ紙目で
-   塗りつぶす。罫線のぶん (2px) だけ下にはみ出させて、左右の余白側も塞ぐ。 */
+   塗りつぶす。罫線のぶん (2px) も塞ぐ。 */
 .app-header::before {
   content: "";
   position: absolute;
@@ -98,6 +99,16 @@ body {
   background-color: var(--paper);
   background-image: radial-gradient(var(--grain) 0.7px, transparent 0.9px);
   background-size: 6px 6px;
+}
+/* 罫線は紙（.app）の幅、タブの右端まで。 */
+.app-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--ink);
 }
 .brand {
   display: flex;
@@ -137,6 +148,9 @@ body[data-tool="kero"] .wordmark { color: #000; }
 }
 .tool-link {
   display: block;
+  /* 罫線 (.app-header::after) より手前。開いているタブだけ罫線を白く抜く。 */
+  position: relative;
+  z-index: 1;
   padding: 8px 16px 9px;
   margin-bottom: -2px;
   border: 2px solid var(--accent-line);

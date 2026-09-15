@@ -1,4 +1,4 @@
-// ugo-sketch UI. Wires the DOM controls to the frame pipeline, keeps a live
+// ゆらゆら UI. Wires the DOM controls to the frame pipeline, keeps a live
 // preview playing, and drives the export writers. No build step, no deps.
 
 import { DEFAULTS, prepareSource, generateFrames, playbackOrder } from './pipeline.js';
@@ -129,7 +129,7 @@ function applyPreset(preset) {
 // ---------------------------------------------------------------------------
 // Config persistence (localStorage) — only the pipeline params in DEFAULTS.
 // ---------------------------------------------------------------------------
-const STORAGE_KEY = 'ugosketch:params';
+const STORAGE_KEY = 'ugosketch:params';   // 保存ずみの設定を捨てないよう、鍵は昔のまま
 let statusTimer = 0;
 
 function flashStatus(msg) {
@@ -405,9 +405,9 @@ function sanitizeBase(name) {
   return clean || 'image';
 }
 
-/** Every export is named after the source image, e.g. `cat_ugosketch.gif`. */
+/** Every export is named after the source image, e.g. `cat_yurayura.gif`. */
 function outName(suffix) {
-  return `${sourceName}_ugosketch${suffix}`;
+  return `${sourceName}_yurayura${suffix}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -493,7 +493,7 @@ async function doCopySheet() {
 
 async function doExportSeq() {
   if (!currentFrames.length) return;
-  const zip = await exportPngSequence(forExport(currentFrames), `${sourceName}_ugosketch`);
+  const zip = await exportPngSequence(forExport(currentFrames), `${sourceName}_yurayura`);
   download(zip, outName('_frames.zip'));
 }
 

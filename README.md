@@ -5,9 +5,9 @@
 
 | ツール | できること | |
 |---|---|---|
-| **ゆらゆら** (旧 UgoSketch) | 画像を手描き風に揺らして、スプライトシート・連番PNG・GIFに書き出す | [開く](https://toshime.github.io/ugo-sketch/) |
-| **ばらばら** (旧 KiriSketch) | スプライトシートなど分離した絵をバラして、個別のPNGに切り出す | [開く](https://toshime.github.io/ugo-sketch/kirisketch.html) |
-| **けろけろ** (旧 AmiSketch) | 画像をうごメモ風の網（ディザ）に。使う色とブラシを選んで減色する | [開く](https://toshime.github.io/ugo-sketch/amisketch.html) |
+| **ゆらゆら** (旧 UgoSketch) | 画像を手描き風に揺らして、スプライトシート・連番PNG・GIFに書き出す | [開く](https://toshime.github.io/toshime-graphic-tools/) |
+| **ばらばら** (旧 KiriSketch) | スプライトシートなど分離した絵をバラして、個別のPNGに切り出す | [開く](https://toshime.github.io/toshime-graphic-tools/barabara.html) |
+| **けろけろ** (旧 AmiSketch) | 画像をうごメモ風の網（ディザ）に。使う色とブラシを選んで減色する | [開く](https://toshime.github.io/toshime-graphic-tools/kerokero.html) |
 
 プレビューはどのツールも同じ操作です。**マウスホイール / トラックパッドのピンチ**で
 カーソルの下を中心に拡大・縮小、**ドラッグ**で移動、**ダブルクリック**でフィットに戻ります。
@@ -22,7 +22,7 @@
 - **減色** — median cut + k-means、ディザ（Bayer / Floyd–Steinberg）、パレット共有
 - **書き出し** — スプライトシートPNG（座標メタJSON付き）、連番PNG（ZIP）、GIF、クリップボードコピー、SNS用の整数倍アップスケール
 
-書き出したファイルは `元のファイル名_ugosketch.gif` のように、読み込んだ画像の名前がそのまま入ります。
+書き出したファイルは `元のファイル名_yurayura.gif` のように、読み込んだ画像の名前がそのまま入ります。
 
 ## ばらばら
 
@@ -32,7 +32,7 @@
 - **仕上げ** — 余白の追加、整数倍の拡大、すべて同じサイズに揃える（中央寄せ）、背景色の透明化
 - **書き出し** — プレビューやサムネイルで要らない1枚を外してから、個別PNG／まとめてZIP（座標メタJSON付き）
 
-書き出し名は `元のファイル名_01.png`、ZIPは `元のファイル名_kirisketch.zip`。
+書き出し名は `元のファイル名_01.png`、ZIPは `元のファイル名_barabara.zip`。
 
 ## けろけろ
 
@@ -56,7 +56,7 @@
 見えかたになります。2 → 3 → 4 → 5 の網はインクの位置が入れ子になっているので、階調が隣の濃さに
 移っても点の位置が飛びません。
 
-書き出し名は `元のファイル名_amisketch.png`。
+書き出し名は `元のファイル名_kerokero.png`。
 
 ## ローカルで動かす
 
@@ -74,16 +74,17 @@ macOS なら `start.command` をダブルクリックしても起動できます
 ビルド不要・依存ライブラリなしの静的サイト。
 
 ```
-index.html        ゆらゆら (旧 UgoSketch)
-kirisketch.html   ばらばら (旧 KiriSketch)
-amisketch.html    けろけろ (旧 AmiSketch)
+index.html        入口。ゆらゆら へ飛ばすだけ
+yurayura.html     ゆらゆら (旧 UgoSketch)
+barabara.html     ばらばら (旧 KiriSketch)
+kerokero.html     けろけろ (旧 AmiSketch)
 style.css         共通スタイル
-kiri.css          ばらばら 固有のスタイル（けろけろ でも一部使用）
-ami.css           けろけろ 固有のスタイル
+bara.css          ばらばら 固有のスタイル（けろけろ でも一部使用）
+kero.css          けろけろ 固有のスタイル
 src/viewer.js     プレビューの拡大・移動・枠のサイズ（3 ツール共通）
 src/shell.js      貼りつく見出しの高さを CSS に渡すだけの小物
 src/*.js          ゆらゆら のパイプライン・書き出し
-src/kiri/*.js     ばらばら の領域検出・UI
-src/ami/*.js      けろけろ のパターン定義・ディザ・UI
+src/bara/*.js     ばらばら の領域検出・UI
+src/kero/*.js     けろけろ のパターン定義・ディザ・UI
 assets/legacy/    旧ロゴ (ugosketch.gif、現在は未使用)
 ```

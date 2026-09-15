@@ -1,4 +1,4 @@
-// KiriSketch UI. Loads one image, works out where the separate pieces are
+// ばらばら UI. Loads one image, works out where the separate pieces are
 // (auto-detect or a fixed grid), and writes them back out as individual PNGs
 // or a single ZIP. Everything runs in the page — no build step, no deps.
 
@@ -150,7 +150,7 @@ function setMode(mode) {
 // ---------------------------------------------------------------------------
 // Config persistence (localStorage)
 // ---------------------------------------------------------------------------
-const STORAGE_KEY = 'kirisketch:params';
+const STORAGE_KEY = 'kirisketch:params';   // 保存ずみの設定を捨てないよう、鍵は昔のまま
 let statusTimer = 0;
 
 function flashStatus(msg) {
@@ -544,9 +544,9 @@ async function exportZip() {
         count: entries.length,
         pieces: meta,
       }, null, 2);
-      entries.push({ name: `${baseName}_kirisketch.json`, data: new TextEncoder().encode(json) });
+      entries.push({ name: `${baseName}_barabara.json`, data: new TextEncoder().encode(json) });
     }
-    download(createZip(entries), `${baseName}_kirisketch.zip`);
+    download(createZip(entries), `${baseName}_barabara.zip`);
   } finally {
     btn.textContent = label;
     btn.disabled = false;
