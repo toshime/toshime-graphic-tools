@@ -81,14 +81,16 @@ body {
   flex-wrap: wrap;
   padding: 18px 4px 0;
   margin-bottom: 18px;
+  /* 罫線は紙の幅（タブの右端）まで。地だけ画面の端まで伸ばす。 */
+  border-bottom: 2px solid var(--ink);
 }
 /* 地は画面の端まで。下を流れる紙が横から覗かないように、ページと同じ紙目で
-   塗りつぶして、罫線もここに引く。 */
+   塗りつぶす。罫線のぶん (2px) だけ下にはみ出させて、左右の余白側も塞ぐ。 */
 .app-header::before {
   content: "";
   position: absolute;
   top: 0;
-  bottom: 0;
+  bottom: -2px;
   left: 50%;
   width: 100vw;
   transform: translateX(-50%);
@@ -96,7 +98,6 @@ body {
   background-color: var(--paper);
   background-image: radial-gradient(var(--grain) 0.7px, transparent 0.9px);
   background-size: 6px 6px;
-  border-bottom: 2px solid var(--ink);
 }
 .brand {
   display: flex;
