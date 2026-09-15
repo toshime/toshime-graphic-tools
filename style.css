@@ -26,9 +26,9 @@
   --font: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
   --font-display: "DotGothic16", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
 }
-body[data-tool="yura"] { --hue: 50; }    /* 橙: ゆらゆら */
+body[data-tool="yura"] { --hue: 250; }   /* 青: ゆらゆら */
 body[data-tool="bara"] { --hue: 350; }   /* 桃: ばらばら */
-body[data-tool="kero"] { --hue: 140; }   /* 緑: けろけろ */
+body[data-tool="kero"] { --hue: 50; }    /* 橙: けろけろ */
 /* --hue を差し替える要素（body と各タブ）の上で組み立てる。:root に書くと
    色相 50 で解決済みの値が継承されて、全ページ橙になる。 */
 body, .tool-link {
@@ -129,7 +129,7 @@ body {
   background: linear-gradient(transparent 58%, var(--accent) 58%);
   padding: 0 4px;
 }
-/* 桃・緑の帯の上では、青紫寄りの墨より真っ黒のほうが字が締まる */
+/* 桃・橙の帯の上では、青紫寄りの墨より真っ黒のほうが字が締まる */
 body[data-tool="bara"] .wordmark,
 body[data-tool="kero"] .wordmark { color: #000; }
 .tagline {
@@ -164,9 +164,9 @@ body[data-tool="kero"] .wordmark { color: #000; }
   text-decoration: none;
   transition: transform 0.08s;
 }
-.tool-link[data-tool="yura"] { --hue: 50; }
+.tool-link[data-tool="yura"] { --hue: 250; }
 .tool-link[data-tool="bara"] { --hue: 350; }
-.tool-link[data-tool="kero"] { --hue: 140; }
+.tool-link[data-tool="kero"] { --hue: 50; }
 .tool-link:hover { transform: translateY(-2px); }
 .tool-link.active {
   border-color: var(--ink);
